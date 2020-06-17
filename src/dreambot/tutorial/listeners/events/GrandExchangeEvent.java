@@ -23,11 +23,6 @@ public final class GrandExchangeEvent extends AbstractEvent implements EventInte
         this.event = (GrandExchangeListener) parentEvent;
     }
 
-    @Override
-    public final void start() {
-        setThread(new Thread(this::run));
-        getThread().start();
-    }
 
     @Override
     public final void run() {
@@ -59,11 +54,6 @@ public final class GrandExchangeEvent extends AbstractEvent implements EventInte
         }
     }
 
-    @Override
-    public final void stop() {
-        this.setRun(false);
-        setThread(null);
-    }
 
     @Override
     public void fire(Object... params) {
