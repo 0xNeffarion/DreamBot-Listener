@@ -52,7 +52,7 @@ public final class GrandExchangeItemWrapper {
 
         GrandExchangeItemWrapper that = (GrandExchangeItemWrapper) o;
 
-        if (that.status == null) return false;
+        if (that.status == null || this.status == null) return false;
         if (!name.equals(that.name)) return false;
         if (id != that.id) return false;
         if (slot != that.slot) return false;
