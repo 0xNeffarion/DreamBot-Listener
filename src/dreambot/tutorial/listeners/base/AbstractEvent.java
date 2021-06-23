@@ -31,8 +31,8 @@ public abstract class AbstractEvent implements EventInterface {
     protected void setThread(Thread thread) {
         this.thread = thread;
     }
-	
-	@Override
+
+    @Override
     public void start() {
         setThread(new Thread(this::run));
         getThread().start();

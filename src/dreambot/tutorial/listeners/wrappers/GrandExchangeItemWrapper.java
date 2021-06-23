@@ -18,7 +18,7 @@ public final class GrandExchangeItemWrapper {
         this.amount = item.getAmount();
         this.price = item.getPrice();
         this.name = item.getName();
-        this.status = item.getStatus();
+        this.status = item.getStatus() == null ? Status.EMPTY : item.getStatus();
     }
 
     public int getId() {

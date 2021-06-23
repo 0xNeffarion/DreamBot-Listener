@@ -4,9 +4,11 @@ import dreambot.tutorial.listeners.base.AbstractEvent;
 import dreambot.tutorial.listeners.base.EventInterface;
 import dreambot.tutorial.listeners.impl.GrandExchangeListener;
 import dreambot.tutorial.listeners.wrappers.GrandExchangeItemWrapper;
-import org.dreambot.api.methods.MethodProvider;
+import org.dreambot.api.Client;
+import org.dreambot.api.methods.grandexchange.GrandExchange;
 import org.dreambot.api.methods.grandexchange.GrandExchangeItem;
 import org.dreambot.api.methods.grandexchange.Status;
+import org.dreambot.api.methods.interactive.Players;
 import org.dreambot.api.script.AbstractScript;
 
 import java.util.ArrayList;
@@ -26,17 +28,15 @@ public final class GrandExchangeEvent extends AbstractEvent implements EventInte
 
     @Override
     public final void run() {
-        Map<Integer, GrandExchangeItemWrapper> current;
-        Map<Integer, GrandExchangeItemWrapper> next = null;
+        Map<Integer, GrandExchangeItemWrapper> current, next = null;
         List<GrandExchangeItemWrapper> difference;
 
         while (!shouldStop() && canRun()) {
             if (canVerify()) {
                 current = fetchItems();
-
                 if (current != null) {
-                    difference = getDifference(current, next);
-                    if (difference != null) {
+                    difference = getDifference(next, current);
+                    if (difference != null && !difference.isEmpty()) {
                         for (GrandExchangeItemWrapper i : difference) {
                             fire(i);
                         }
@@ -48,8 +48,7 @@ public final class GrandExchangeEvent extends AbstractEvent implements EventInte
 
             try {
                 Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                MethodProvider.logError(e.toString());
+            } catch (InterruptedException ignored) {
             }
         }
     }
@@ -59,7 +58,7 @@ public final class GrandExchangeEvent extends AbstractEvent implements EventInte
     public void fire(Object... params) {
         if (params != null && params.length > 0 && params[0] != null) {
             GrandExchangeItemWrapper item = (GrandExchangeItemWrapper) params[0];
-            if (item.getStatus() != null && item.getName() != null) {
+            if (item.getStatus() != null && item.getName() != null && item.getId() != 0 && item.getPrice() != 0) {
                 if (item.getStatus() == Status.BUY_COLLECT) {
                     this.event.onItemBought(item);
                 } else if (item.getStatus() == Status.SELL_COLLECT) {
@@ -81,8 +80,16 @@ public final class GrandExchangeEvent extends AbstractEvent implements EventInte
             GrandExchangeItemWrapper item1 = entry.getValue();
             GrandExchangeItemWrapper item2 = after.get(slot);
 
+            if ((item1.getStatus() == Status.SELL_COLLECT || item1.getStatus() == Status.BUY_COLLECT) && item2.getStatus() == Status.EMPTY) {
+                continue;
+            }
+
             if (!item1.equals(item2)) {
-                list.add(item1);
+                if (item1.getStatus() == Status.EMPTY) {
+                    list.add(item2);
+                } else {
+                    list.add(item1);
+                }
             }
         }
 
@@ -90,7 +97,7 @@ public final class GrandExchangeEvent extends AbstractEvent implements EventInte
     }
 
     private Map<Integer, GrandExchangeItemWrapper> fetchItems() {
-        GrandExchangeItem[] items = script.getGrandExchange().getItems();
+        GrandExchangeItem[] items = GrandExchange.getItems();
         if (items != null && items.length > 0) {
             Map<Integer, GrandExchangeItemWrapper> map = new HashMap<>();
             for (int i = 0; i < items.length; i++) {
@@ -104,12 +111,11 @@ public final class GrandExchangeEvent extends AbstractEvent implements EventInte
     }
 
     private boolean canVerify() {
-        return script.getClient().isLoggedIn() && !script.getRandomManager().isSolving()
-                && script.getLocalPlayer() != null && script.getLocalPlayer().exists();
+        return Client.isLoggedIn() && !Client.getInstance().getRandomManager().isSolving()
+                && Players.localPlayer() != null && Players.localPlayer().exists();
     }
 
     private boolean shouldStop() {
-        return !script.getClient().getInstance().getScriptManager().isRunning();
+        return !Client.getInstance().getScriptManager().isRunning();
     }
-
 }
