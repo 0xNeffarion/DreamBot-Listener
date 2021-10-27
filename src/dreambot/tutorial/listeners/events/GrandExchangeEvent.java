@@ -22,7 +22,7 @@ public final class GrandExchangeEvent extends AbstractEvent implements EventInte
 
     public GrandExchangeEvent(AbstractScript script) {
         super(script);
-        this.event = (GrandExchangeListener) parentEvent;
+        this.event = (GrandExchangeListener) pEvent;
     }
 
 
