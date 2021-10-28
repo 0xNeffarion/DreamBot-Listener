@@ -6,14 +6,12 @@ import java.util.EventListener;
 
 public abstract class AbstractEvent implements EventInterface {
 
-    protected AbstractScript script;
-    protected EventListener parentEvent;
+    protected EventListener pEvent;
     private Thread thread;
     private volatile boolean run = true;
 
     public AbstractEvent(AbstractScript script) {
-        this.script = script;
-        this.parentEvent = script;
+        this.pEvent = script;
     }
 
     public boolean canRun() {
